@@ -1,7 +1,6 @@
 package interfaz;
 
 import javafx.application.Application;
-import javafx.collections.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -67,9 +66,9 @@ public class Inter extends Application {
         Button btnAgregarTrab = new Button("Registrar");
         Button btnEditarTrab = new Button("Editar");
         Button btnEliminarTrab = new Button("Eliminar");
-        Button btnElimTiempos = new Button("Eliminar Tiempos 0h");
+        Button btnImprimirDetalleTrab = new Button("Imprimir Detalle Trabajador");
 
-        HBox botonesTrab = new HBox(10, btnAgregarTrab, btnEditarTrab, btnEliminarTrab, btnElimTiempos);
+        HBox botonesTrab = new HBox(10, btnAgregarTrab, btnEditarTrab, btnEliminarTrab, btnImprimirDetalleTrab);
         botonesTrab.setAlignment(Pos.CENTER);
 
         VBox panelTrabajadores = new VBox(10, tituloTrab, nombreTrab, cargoTrab, especTrab, botonesTrab);
@@ -261,12 +260,20 @@ public class Inter extends Application {
             }
         });
 
-        btnElimTiempos.setOnAction(e -> {
+        btnImprimirDetalleTrab.setOnAction(e -> {
             int idx = listaTrabajadores.getSelectionModel().getSelectedIndex();
             if (idx >= 0) {
-                conector.eliminarTiemposCero(idx);
-                actualizarListas();
-                mostrarTiemposTrabajador(idx);
+                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                java.io.PrintStream ps = new java.io.PrintStream(baos);
+                java.io.PrintStream old = System.out;
+                System.setOut(ps);
+                conector.imprimirDetalleTrabajador(idx);
+                System.out.flush();
+                System.setOut(old);
+                String detalle = baos.toString();
+                mostrarAlerta(detalle);
+            } else {
+                mostrarAlerta("Seleccione un trabajador para imprimir su detalle.");
             }
         });
 
@@ -285,7 +292,7 @@ public class Inter extends Application {
                 actualizarListas();
                 nombreCons.clear(); descCons.clear(); horasAdm.clear(); horasCons.clear();
                 inicio.clear(); fin.clear(); tipo.clear();
-            } catch (Exception ex) {
+            } catch (IllegalArgumentException ex) {
                 mostrarAlerta("Datos inválidos para consultoría.");
             }
         });
@@ -329,10 +336,9 @@ public class Inter extends Application {
                     if (!ok) {
                         mostrarAlerta("Excede el límite de horas legales.");
                     } else {
-                        actualizarListas();
-                        mostrarTiemposTrabajador(idxTrab);
+                        // Actualizar listas si es necesario
                     }
-                } catch (Exception ex) {
+                } catch (NumberFormatException ex) {
                     mostrarAlerta("Horas inválidas.");
                 }
             }
@@ -349,11 +355,10 @@ public class Inter extends Application {
                     if (error != null) {
                         mostrarAlerta(error);
                     } else {
-                        actualizarListas();
-                        mostrarTiemposTrabajador(idxTrab);
+                        // Actualizar listas si es necesario
                     }
-                } catch (Exception ex) {
-                    mostrarAlerta("Horas inválidas.");
+                } catch (IllegalArgumentException ex) {
+                    mostrarAlerta("Datos inválidos para el pago.");
                 }
             }
         });

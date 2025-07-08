@@ -1,11 +1,15 @@
 package modelo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TiempoConsultoria {
     private Trabajador trabajador;
     private Consultoria consultoria;
     private int horasAsignadas;
     private int horasRestantes;
     private int horasPagadas;
+    private List<ConsultoriaPago> pagos;
 
     public TiempoConsultoria(Trabajador trabajador, Consultoria consultoria, int horasAsignadas) {
         this.trabajador = trabajador;
@@ -13,6 +17,14 @@ public class TiempoConsultoria {
         this.horasAsignadas = horasAsignadas;
         this.horasRestantes = horasAsignadas;
         this.horasPagadas = 0;
+        this.pagos = new ArrayList<>();
+    }
+    public void agregarPago(ConsultoriaPago pago) {
+        pagos.add(pago);
+    }
+
+    public List<ConsultoriaPago> getPagos() {
+        return pagos;
     }
 
     public Trabajador getTrabajador() {

@@ -48,6 +48,32 @@ public class Conector {
         }
         return -1;
     }
+    public void imprimirDetalleTrabajador(int idxTrab) {
+        if (idxTrab < 0 || idxTrab >= trabajadores.size()) {
+            System.out.println("Índice de trabajador inválido.");
+            return;
+        }
+        Trabajador t = trabajadores.get(idxTrab);
+        System.out.println("Trabajador: " + t.getNombre() + " | Cargo: " + t.getCargo() + " | Especialización: " + t.getEspecializacion() + " | ID: " + t.getCodigoID());
+        for (TiempoConsultoria tc : t.getTiempoConsultorias()) {
+            Consultoria c = tc.getConsultoria();
+            System.out.println("\n--- Consultoría: " + c.getNombre() + " (ID: " + c.getCodigoID() + ") ---");
+            System.out.println("Horas asignadas: " + tc.getHorasAsignadas());
+            System.out.println("Horas restantes: " + tc.getHorasRestantes());
+            System.out.println("Horas pagadas: " + tc.getHorasPagadas());
+            System.out.println("Pagos realizados:");
+            List<ConsultoriaPago> pagos = tc.getPagos();
+            if (pagos != null && !pagos.isEmpty()) {
+                for (ConsultoriaPago pago : pagos) {
+                    System.out.println("  Fecha: " + pago.getFecha() +
+                            " | Horas pagadas: " + pago.getHorasPagadas() +
+                            " | Consultoría: " + pago.getConsultoria().getNombre());
+                }
+            } else {
+                System.out.println("  (Sin pagos registrados)");
+            }
+        }
+    }
 
     // --- Consultorías ---
     public void agregarConsultoria(Consultoria c) {
@@ -91,13 +117,6 @@ public class Conector {
         return false;
     }
 
-    public void eliminarTiemposCero(int idxTrab) {
-        if (idxTrab >= 0 && idxTrab < trabajadores.size()) {
-            Trabajador t = trabajadores.get(idxTrab);
-            t.getTiempoConsultorias().removeIf(tc -> tc.getHorasRestantes() == 0);
-        }
-    }
-
     // --- Pagos ---
     public String registrarPago(int idxTrab, int idxCons, int horas, Date fecha) {
         if (idxTrab >= 0 && idxTrab < trabajadores.size() && idxCons >= 0 && idxCons < consultorias.size()) {
@@ -119,7 +138,9 @@ public class Conector {
             if (horas > tiempo.getHorasRestantes()) {
                 return "No puede pagar más horas de las que le quedan al trabajador.";
             }
-            c.agregarPago(new ConsultoriaPago(fecha, c, horas, t));
+            ConsultoriaPago pago = new ConsultoriaPago(fecha, c, horas, t);
+            c.agregarPago(pago);
+            tiempo.agregarPago(pago); // <-- Añade el pago a TiempoConsultoria
             tiempo.reducirHoras(horas);
             return null; // éxito
         }
